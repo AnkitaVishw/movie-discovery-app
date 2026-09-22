@@ -11,7 +11,7 @@ You need Node.js 18+.
 1. Install and run the backend:
 
 ```powershell
-cd movie-discovery-app/backend
+cd backend
 npm install
 npm run dev
 ```
@@ -21,7 +21,7 @@ API: `http://localhost:4000`
 2. In another terminal, install and run the frontend:
 
 ```powershell
-cd movie-discovery-app/frontend
+cd frontend
 npm install
 npm run dev
 ```
@@ -36,13 +36,13 @@ Optional: copy `.env.example` to `.env` only if you want to change the port or c
 
 Users land on a **Discover** feed so they can find something without knowing a title. Search, genre, year, and sort live in the URL so back/forward keep context. Movie details are a separate route; Discover remembers the last browse query.
 
-Wishlist items are saved in **SQLite** with a snapshot of title, poster, rating, and overview.
+Wishlist items are saved in **SQLite** (via `sql.js`, no native compile) with a snapshot of title, poster, rating, and overview.
 
 The backend maps TVMaze’s shape into a smaller JSON contract. The UI never depends on TVMaze field names.
 
 ## Technical decisions
 
-- **React + Vite + Express + SQLite** — required stack, easy local setup.
+- **React + Vite + Express + SQLite (sql.js)** — required stack, no native C++ build, works on Node 18–25.
 - **TVMaze as the catalog** — free, no key, search, schedule, genres, cast, and paging.
 - **In-memory TTL cache** — repeated browse/filter requests do not each hit TVMaze (they ask consumers to cache).
 - **Timeouts and mapped errors** — slow/down/rate-limited catalog becomes 504 / 503 / 429.

@@ -1,10 +1,12 @@
 import express from "express";
 import cors from "cors";
 import { config } from "./config.js";
-import "./db.js";
+import { initDb } from "./db.js";
 import moviesRouter from "./routes/movies.js";
 import wishlistRouter from "./routes/wishlist.js";
 import { UpstreamError } from "./catalog.js";
+
+await initDb();
 
 const app = express();
 app.use(cors());
