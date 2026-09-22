@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { mapGenre, mapMovieDetail, mapMovieSummary } from "../mappers.js";
-import { getGenreLookup, getGenres, getMovie, listMovies, TmdbError } from "../tmdb.js";
+import { mapGenre, mapShowDetail, mapShowSummary } from "../mappers.js";
+import { getGenres, getMovie, listMovies, UpstreamError } from "../catalog.js";
 
 const router = Router();
 
@@ -12,7 +12,7 @@ function parsePositiveInt(value) {
 router.get("/genres", async (_req, res, next) => {
   try {
     const genres = await getGenres();
-    res.json({ genres: genres.map(mapGenre) });
+    res.json({ genres: genres.map((genre) => mapGenre(genre.name)) });
   } catch (error) {
     next(error);
   }
@@ -22,37 +22,22 @@ router.get("/", async (req, res, next) => {
   try {
     const query = String(req.query.query || "").trim().slice(0, 120);
     const collection = String(req.query.collection || "popular");
-    const genre = parsePositiveInt(req.query.genre);
+    const genre = String(req.query.genre || "").trim();
     const year = parsePositiveInt(req.query.year);
     const sort = String(req.query.sort || "popularity");
     const page = parsePositiveInt(req.query.page) || 1;
 
-    const [raw, genreLookup] = await Promise.all([
-      listMovies({
-        collection,
-        query,
-        genre,
-        year,
-        sort,
-        page,
-      }),
-      getGenreLookup(),
-    ]);
+    const raw = await listMovies({
+      collection,
+      query,
+      genre,
+      year,
+      sort,
+      page,
+    });
 
     const results = Array.isArray(raw?.results) ? raw.results : [];
-    let movies = results
-      .filter((item) => item?.id)
-      .map((item) => mapMovieSummary(item, genreLookup));
-
-    if (query && sort && sort !== "popularity") {
-      movies = [...movies].sort((a, b) => {
-        if (sort === "rating") return b.rating - a.rating;
-        if (sort === "newest") return String(b.releaseDate || "").localeCompare(String(a.releaseDate || ""));
-        if (sort === "oldest") return String(a.releaseDate || "").localeCompare(String(b.releaseDate || ""));
-        if (sort === "title") return a.title.localeCompare(b.title);
-        return 0;
-      });
-    }
+    const movies = results.filter((item) => item?.id).map((item) => mapShowSummary(item));
 
     res.json({
       page: raw?.page || page,
@@ -71,13 +56,10 @@ router.get("/:id", async (req, res, next) => {
     if (!id) {
       return res.status(400).json({ error: "Invalid movie id.", code: "BAD_REQUEST" });
     }
-    const raw = await getMovie(id);
-    if (!raw?.id) {
-      return res.status(404).json({ error: "Movie not found.", code: "NOT_FOUND" });
-    }
-    res.json(mapMovieDetail(raw));
+    const { raw, similar } = await getMovie(id);
+    res.json(mapShowDetail(raw, similar));
   } catch (error) {
-    if (error instanceof TmdbError && error.code === "UPSTREAM") {
+    if (error instanceof UpstreamError && error.code === "NOT_FOUND") {
       return res.status(404).json({ error: "Movie not found.", code: "NOT_FOUND" });
     }
     next(error);

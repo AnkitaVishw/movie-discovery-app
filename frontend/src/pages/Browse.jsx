@@ -106,7 +106,7 @@ export default function Browse() {
           <p className="eyebrow">Movie discovery</p>
           <h1>{heading}</h1>
           <p className="lede">
-            Browse popular titles, filter by mood, or search when you already have a film in mind.
+            Browse a free public catalog, filter by genre or year, or search when you already have a title in mind.
           </p>
         </div>
       </div>

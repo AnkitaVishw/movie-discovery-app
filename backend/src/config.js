@@ -8,10 +8,10 @@ dotenv.config({ path: path.join(rootDir, "backend", ".env") });
 
 export const config = {
   port: Number(process.env.PORT) || 4000,
-  tmdbApiKey: process.env.TMDB_API_KEY || "",
-  tmdbBaseUrl: "https://api.themoviedb.org/3",
-  tmdbImageBase: "https://image.tmdb.org/t/p",
-  cacheTtlMs: Number(process.env.CACHE_TTL_MS) || 10 * 60 * 1000,
-  tmdbTimeoutMs: Number(process.env.TMDB_TIMEOUT_MS) || 8000,
+  tvmazeBaseUrl: "https://api.tvmaze.com",
+  cacheTtlMs: Number(process.env.CACHE_TTL_MS) || 30 * 60 * 1000,
+  upstreamTimeoutMs: Number(process.env.UPSTREAM_TIMEOUT_MS) || 8000,
+  catalogPages: Number(process.env.CATALOG_PAGES) || 4,
+  pageSize: 20,
   dbPath: path.join(rootDir, "backend", "data", "app.db"),
 };
